@@ -1,0 +1,102 @@
+# =========================
+# OS
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# IDE
+# =========================
+.idea/
+.vscode/
+*.iml
+
+# =========================
+# Java / Spring Boot
+# =========================
+target/
+*.class
+*.jar
+*.war
+*.ear
+.mvn/wrapper/maven-wrapper.jar
+
+# =========================
+# Logs
+# =========================
+*.log
+logs/
+
+# =========================
+# Environment / Secrets
+# =========================
+.env
+*.env
+application-local.properties
+application-dev.properties
+application-prod.properties
+firebase-service-account.json
+serviceAccountKey.json
+*.pem
+*.key
+
+# =========================
+# React Native / Node
+# =========================
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+.expo/
+.expo-shared/
+
+# =========================
+# React Native Android
+# =========================
+mobile/camera-ai-mobile/android/.gradle/
+mobile/camera-ai-mobile/android/app/build/
+mobile/camera-ai-mobile/android/build/
+mobile/camera-ai-mobile/android/local.properties
+*.apk
+*.aab
+
+# =========================
+# React Native iOS
+# =========================
+mobile/camera-ai-mobile/ios/Pods/
+mobile/camera-ai-mobile/ios/build/
+mobile/camera-ai-mobile/ios/DerivedData/
+
+# =========================
+# Metro / Watchman
+# =========================
+.metro-cache/
+.watchmanconfig
+
+# =========================
+# Arduino IDE / ESP32
+# =========================
+*.elf
+*.hex
+*.bin
+*.map
+*.eep
+*.lss
+*.sym
+
+firmware/**/build/
+firmware/**/.pio/
+firmware/**/partitions.csv.bak
+
+# =========================
+# Docker local volumes
+# =========================
+deployment/minio/data/
+deployment/mysql/data/
+
+# =========================
+# Temporary files
+# =========================
+tmp/
+temp/
+*.tmp
