@@ -1,5 +1,7 @@
 package com.nambv.cameraai.device.controller;
 
+import com.nambv.cameraai.alert.dto.AlertResponse;
+import com.nambv.cameraai.alert.service.AlertService;
 import com.nambv.cameraai.common.response.ApiResponse;
 import com.nambv.cameraai.device.dto.DeviceHeartbeatRequest;
 import com.nambv.cameraai.device.dto.DevicePairRequest;
@@ -18,6 +20,7 @@ import java.util.List;
 public class DeviceController {
 
     private final DeviceService deviceService;
+    private final AlertService alertService;
 
     @PostMapping("/heartbeat")
     public ApiResponse<DeviceResponse> heartbeat(@Valid @RequestBody DeviceHeartbeatRequest request) {
@@ -41,6 +44,12 @@ public class DeviceController {
     public ApiResponse<DeviceResponse> getMyDeviceById(@PathVariable Long id) {
         DeviceResponse response = deviceService.getMyDeviceById(id);
         return ApiResponse.success("Get device successfully", response);
+    }
+
+    @GetMapping("/{id}/alerts")
+    public ApiResponse<List<AlertResponse>> getAlertsByDevice(@PathVariable Long id) {
+        List<AlertResponse> response = alertService.getAlertsByDevice(id);
+        return ApiResponse.success("Get device alerts successfully", response);
     }
 
     @PatchMapping("/{id}")

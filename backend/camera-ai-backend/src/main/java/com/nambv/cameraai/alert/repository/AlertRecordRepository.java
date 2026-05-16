@@ -9,4 +9,6 @@ import java.util.List;
 public interface AlertRecordRepository extends JpaRepository<AlertRecord, Long> {
 
     List<AlertRecord> findByDeviceOrderByCreatedAtDesc(Device device);
+
+    List<AlertRecord> findByDeviceInOrderByCreatedAtDesc(List<Device> devices);
 }
