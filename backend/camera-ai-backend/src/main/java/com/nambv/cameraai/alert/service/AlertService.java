@@ -15,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -69,6 +70,7 @@ public class AlertService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
     public List<AlertResponse> getMyAlerts() {
         User currentUser = getCurrentUser();
 
@@ -84,6 +86,7 @@ public class AlertService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<AlertResponse> getAlertsByDevice(Long deviceId) {
         User currentUser = getCurrentUser();
 
@@ -97,7 +100,7 @@ public class AlertService {
                 .map(this::toResponse)
                 .toList();
     }
-
+    @Transactional
     public AlertResponse markAsRead(Long alertId) {
         User currentUser = getCurrentUser();
 
