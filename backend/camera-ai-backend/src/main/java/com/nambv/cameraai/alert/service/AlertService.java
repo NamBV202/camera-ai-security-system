@@ -10,12 +10,15 @@ import com.nambv.cameraai.device.repository.DeviceRepository;
 import com.nambv.cameraai.storage.service.MinioService;
 import com.nambv.cameraai.user.entity.User;
 import com.nambv.cameraai.user.repository.UserRepository;
+import com.nambv.cameraai.notification.service.FcmService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -29,7 +32,8 @@ public class AlertService {
     private final DeviceRepository deviceRepository;
     private final UserRepository userRepository;
     private final MinioService minioService;
-
+    private final FcmService fcmService;
+    @Transactional
     public AlertUploadResponse uploadAlert(
             MultipartFile image,
             String macAddress,
@@ -54,6 +58,16 @@ public class AlertService {
                 .build();
 
         AlertRecord savedAlert = alertRecordRepository.save(alertRecord);
+
+        if (device.getUser() != null) {
+            fcmService.sendAlertNotification(
+                    device.getUser().getFcmToken(),
+                    savedAlert.getId(),
+                    device.getId(),
+                    device.getDeviceName(),
+                    savedAlert.getMediaUrl()
+            );
+        }
 
         device.setStatus("ONLINE");
         device.setLastActive(LocalDateTime.now());
