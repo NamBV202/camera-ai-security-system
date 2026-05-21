@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "675793196769",
+    "project_id": "camera-ai-security",
+    "storage_bucket": "camera-ai-security.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:675793196769:android:bb467351b57d8241d5c9a0",
+        "android_client_info": {
+          "package_name": "com.cameraaI.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJiG8Xk635CYHPBtWox5wnOltszKEzKfk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
