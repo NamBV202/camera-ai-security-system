@@ -41,8 +41,10 @@ public class AlertController {
     }
 
     @GetMapping
-    public ApiResponse<List<AlertResponse>> getMyAlerts() {
-        List<AlertResponse> response = alertService.getMyAlerts();
+    public ApiResponse<List<AlertResponse>> getMyAlerts(
+            @RequestParam(value = "isRead", required = false) Boolean isRead
+    ) {
+        List<AlertResponse> response = alertService.getMyAlerts(isRead);
         return ApiResponse.success("Get alerts successfully", response);
     }
 
@@ -50,5 +52,11 @@ public class AlertController {
     public ApiResponse<AlertResponse> markAsRead(@PathVariable Long id) {
         AlertResponse response = alertService.markAsRead(id);
         return ApiResponse.success("Alert marked as read", response);
+    }
+
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> deleteAlert(@PathVariable Long id) {
+        alertService.deleteAlert(id);
+        return ApiResponse.success("Alert deleted successfully", null);
     }
 }

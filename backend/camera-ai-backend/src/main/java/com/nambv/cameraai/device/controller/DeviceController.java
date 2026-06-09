@@ -47,8 +47,11 @@ public class DeviceController {
     }
 
     @GetMapping("/{id}/alerts")
-    public ApiResponse<List<AlertResponse>> getAlertsByDevice(@PathVariable Long id) {
-        List<AlertResponse> response = alertService.getAlertsByDevice(id);
+    public ApiResponse<List<AlertResponse>> getAlertsByDevice(
+            @PathVariable Long id,
+            @RequestParam(value = "isRead", required = false) Boolean isRead
+    ) {
+        List<AlertResponse> response = alertService.getAlertsByDevice(id, isRead);
         return ApiResponse.success("Get device alerts successfully", response);
     }
 
@@ -65,5 +68,17 @@ public class DeviceController {
     public ApiResponse<Void> unpairDevice(@PathVariable Long id) {
         deviceService.unpairDevice(id);
         return ApiResponse.success("Device unpaired successfully", null);
+    }
+
+    @PatchMapping("/{id}/alerts/read-all")
+    public ApiResponse<Void> markAllDeviceAlertsAsRead(@PathVariable Long id) {
+        alertService.markAllDeviceAlertsAsRead(id);
+        return ApiResponse.success("All device alerts marked as read", null);
+    }
+
+    @DeleteMapping("/{id}/alerts")
+    public ApiResponse<Void> deleteAllDeviceAlerts(@PathVariable Long id) {
+        alertService.deleteAllDeviceAlerts(id);
+        return ApiResponse.success("Device alerts deleted successfully", null);
     }
 }

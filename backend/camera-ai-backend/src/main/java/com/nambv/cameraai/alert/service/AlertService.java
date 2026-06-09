@@ -7,18 +7,16 @@ import com.nambv.cameraai.alert.repository.AlertRecordRepository;
 import com.nambv.cameraai.auth.security.CustomUserDetails;
 import com.nambv.cameraai.device.entity.Device;
 import com.nambv.cameraai.device.repository.DeviceRepository;
+import com.nambv.cameraai.notification.service.FcmService;
 import com.nambv.cameraai.storage.service.MinioService;
 import com.nambv.cameraai.user.entity.User;
 import com.nambv.cameraai.user.repository.UserRepository;
-import com.nambv.cameraai.notification.service.FcmService;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -33,6 +31,8 @@ public class AlertService {
     private final UserRepository userRepository;
     private final MinioService minioService;
     private final FcmService fcmService;
+
+
     @Transactional
     public AlertUploadResponse uploadAlert(
             MultipartFile image,
@@ -59,6 +59,10 @@ public class AlertService {
 
         AlertRecord savedAlert = alertRecordRepository.save(alertRecord);
 
+        device.setStatus("ONLINE");
+        device.setLastActive(LocalDateTime.now());
+        deviceRepository.save(device);
+
         if (device.getUser() != null) {
             fcmService.sendAlertNotification(
                     device.getUser().getFcmToken(),
@@ -68,10 +72,6 @@ public class AlertService {
                     savedAlert.getMediaUrl()
             );
         }
-
-        device.setStatus("ONLINE");
-        device.setLastActive(LocalDateTime.now());
-        deviceRepository.save(device);
 
         return AlertUploadResponse.builder()
                 .alertId(savedAlert.getId())
@@ -85,7 +85,7 @@ public class AlertService {
     }
 
     @Transactional(readOnly = true)
-    public List<AlertResponse> getMyAlerts() {
+    public List<AlertResponse> getMyAlerts(Boolean isRead) {
         User currentUser = getCurrentUser();
 
         List<Device> devices = deviceRepository.findByUser(currentUser);
@@ -94,14 +94,21 @@ public class AlertService {
             return List.of();
         }
 
-        return alertRecordRepository.findByDeviceInOrderByCreatedAtDesc(devices)
-                .stream()
+        List<AlertRecord> alerts;
+
+        if (isRead == null) {
+            alerts = alertRecordRepository.findByDeviceInOrderByCreatedAtDesc(devices);
+        } else {
+            alerts = alertRecordRepository.findByDeviceInAndIsReadOrderByCreatedAtDesc(devices, isRead);
+        }
+
+        return alerts.stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<AlertResponse> getAlertsByDevice(Long deviceId) {
+    public List<AlertResponse> getAlertsByDevice(Long deviceId, Boolean isRead) {
         User currentUser = getCurrentUser();
 
         Device device = deviceRepository.findById(deviceId)
@@ -109,11 +116,19 @@ public class AlertService {
 
         checkDeviceOwner(device, currentUser);
 
-        return alertRecordRepository.findByDeviceOrderByCreatedAtDesc(device)
-                .stream()
+        List<AlertRecord> alerts;
+
+        if (isRead == null) {
+            alerts = alertRecordRepository.findByDeviceOrderByCreatedAtDesc(device);
+        } else {
+            alerts = alertRecordRepository.findByDeviceAndIsReadOrderByCreatedAtDesc(device, isRead);
+        }
+
+        return alerts.stream()
                 .map(this::toResponse)
                 .toList();
     }
+
     @Transactional
     public AlertResponse markAsRead(Long alertId) {
         User currentUser = getCurrentUser();
@@ -130,6 +145,52 @@ public class AlertService {
         AlertRecord savedAlert = alertRecordRepository.save(alertRecord);
 
         return toResponse(savedAlert);
+    }
+
+    @Transactional
+    public void markAllDeviceAlertsAsRead(Long deviceId) {
+        User currentUser = getCurrentUser();
+
+        Device device = deviceRepository.findById(deviceId)
+                .orElseThrow(() -> new RuntimeException("Device not found"));
+
+        checkDeviceOwner(device, currentUser);
+
+        List<AlertRecord> unreadAlerts = alertRecordRepository.findByDeviceAndIsReadFalse(device);
+
+        for (AlertRecord alert : unreadAlerts) {
+            alert.setIsRead(true);
+        }
+
+        alertRecordRepository.saveAll(unreadAlerts);
+    }
+
+    @Transactional
+    public void deleteAlert(Long alertId) {
+        User currentUser = getCurrentUser();
+
+        AlertRecord alertRecord = alertRecordRepository.findById(alertId)
+                .orElseThrow(() -> new RuntimeException("Alert not found"));
+
+        Device device = alertRecord.getDevice();
+
+        checkDeviceOwner(device, currentUser);
+
+        alertRecordRepository.delete(alertRecord);
+    }
+
+    @Transactional
+    public void deleteAllDeviceAlerts(Long deviceId) {
+        User currentUser = getCurrentUser();
+
+        Device device = deviceRepository.findById(deviceId)
+                .orElseThrow(() -> new RuntimeException("Device not found"));
+
+        checkDeviceOwner(device, currentUser);
+
+        List<AlertRecord> alerts = alertRecordRepository.findByDeviceOrderByCreatedAtDesc(device);
+
+        alertRecordRepository.deleteAll(alerts);
     }
 
     private void validateUploadRequest(
